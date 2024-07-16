@@ -70,8 +70,9 @@ export class EmailServer {
   }
 
   async start() {
-    this.server.listen(process.env.SMTP_PORT || 2525, () => {
-      console.log('SMTP server listening on port 25');
+    const port = process.env.SMTP_PORT || 2525;
+    this.server.listen(port, () => {
+      console.log(`SMTP server listening on port ${port}`);
     });
   }
 }
