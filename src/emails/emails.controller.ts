@@ -1,17 +1,17 @@
 import { Body, Controller, Get, Post } from '@nestjs/common';
-import { queue, users } from '@prisma/client';
-// import { createTransport } from 'nodemailer';
+import { queue } from '@prisma/client';
 import * as nodemailer from 'nodemailer';
-import { PrismaService } from 'src/common/prisma.service';
 import { NewEmailRequest } from '../model/Email';
+import { EmailsService } from './emails.service';
+
 @Controller('emails')
 export class EmailsController {
-  constructor(private prisma: PrismaService) {}
+  constructor(private emailsService: EmailsService) {}
 
   private async createTx({ user, pass }): Promise<nodemailer.createTransport> {
     const txOpt = {
-      host: 'localhost',
-      port: 2525,
+      host: process.env.SMTP_HOST || 'localhost',
+      port: process.env.SMTP_PORT || 2525,
       secure: false, // Use `true` for port 465, `false` for all other ports
       auth: {
         user: user,
@@ -46,7 +46,7 @@ export class EmailsController {
   // get all image stored to db processed by queue
   @Get()
   async user(): Promise<queue[]> {
-    return this.prisma.queue.findMany();
+    return await this.emailsService.getEmails();
   }
 
   // post new email store using queue
