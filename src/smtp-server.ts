@@ -1,5 +1,7 @@
 import { SMTPServer } from 'smtp-server';
 import { MailParser } from 'mailparser';
+import { PrismaService } from './common/prisma.service';
+import { Prisma } from '@prisma/client';
 
 export const smtpServer = new SMTPServer({
   secure: false,
@@ -12,7 +14,7 @@ export const smtpServer = new SMTPServer({
   },
 
   onData(stream, session, callback) {
-    let subject: unknown, text: unknown;
+    let subject: unknown, data: unknown;
     var mailparser = new MailParser();
 
     mailparser.on('headers', (headers) => {
@@ -21,13 +23,25 @@ export const smtpServer = new SMTPServer({
 
     mailparser.on('data', (data) => {
       if (data.type === 'text') {
-        text = data.text;
+        data = data;
       }
     });
 
-    mailparser.on('end', () => {
+    mailparser.on('end', async () => {
       console.log(subject);
-      console.log(text);
+
+      console.log(data);
+
+      // store data in queue
+      // const prismaService = new PrismaService();
+      // const result = await prismaService.$queryRaw(
+      //   Prisma.sql`
+      //   SELECT version()
+      //   `,
+      // );
+
+      // const users = await prismaService.users.findMany();
+      // console.log(users);
     });
 
     stream.pipe(mailparser);
