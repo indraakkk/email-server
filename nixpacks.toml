@@ -1,0 +1,7 @@
+
+[phases.build]
+cmds = ["pnpm run build"]
+
+[phases.test]
+dependsOn = ["build"]
+cmds = ["pnpm run test"]
