@@ -1,8 +1,7 @@
 import { SMTPServer } from 'smtp-server';
 import { MailParser } from 'mailparser';
-// import { PrismaService } from './common/prisma.service';
-// import { Prisma } from '@prisma/client';
 import { Injectable } from '@nestjs/common';
+import { QueueService } from './queue.service';
 
 @Injectable()
 export class EmailServer {
@@ -20,34 +19,39 @@ export class EmailServer {
       },
 
       onData(stream, session, callback) {
-        let subject: unknown, payload: unknown;
-        var mailparser = new MailParser();
+        let payload = {};
+        const mailparser = new MailParser();
 
         mailparser.on('headers', (headers) => {
-          subject = headers.get('subject');
+          const from = headers.get('from');
+
+          payload = {
+            ...payload,
+            subject: headers.get('subject'),
+            from: headers.get('from'),
+            to: headers.get('to'),
+            cc: headers.get('cc'),
+            bcc: headers.get('bcc'),
+            date: headers.get('date'),
+          };
         });
 
         mailparser.on('data', (data) => {
-          if (data.type === 'text') {
-            console.log(data);
-            payload = data;
-          }
+          payload = {
+            ...payload,
+            text: data.text,
+            html: data.html,
+          };
         });
 
         mailparser.on('end', async () => {
-          console.log(subject);
-          console.log(payload);
+          const queue = new QueueService();
 
-          // store data in queue
-          // const prismaService = new PrismaService();
-          // const result = await prismaService.$queryRaw(
-          //   Prisma.sql`
-          //   SELECT version()
-          //   `,
-          // );
+          const dataToIns = {
+            payload: payload,
+          };
 
-          // const users = await prismaService.users.findMany();
-          // console.log(users);
+          await queue.addToQueue(dataToIns);
         });
 
         stream.pipe(mailparser);
@@ -66,7 +70,7 @@ export class EmailServer {
   }
 
   async start() {
-    this.server.listen(2525, () => {
+    this.server.listen(process.env.SMTP_PORT || 2525, () => {
       console.log('SMTP server listening on port 25');
     });
   }

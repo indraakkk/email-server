@@ -8,8 +8,8 @@ datasource db {
 }
 
 model queue {
-  element_identifier String    @id @db.Uuid
-  time_inserted      DateTime? @db.Date
+  element_identifier String    @id @default(uuid()) @db.Uuid
+  time_inserted      DateTime? @default(now()) @db.Date
   payload            Json?     @db.Json
 
   @@index([time_inserted(sort: Asc)])

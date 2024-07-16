@@ -1,0 +1,2 @@
+-- AlterTable
+ALTER TABLE "queue" ALTER COLUMN "time_inserted" SET DEFAULT CURRENT_TIMESTAMP;
