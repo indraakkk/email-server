@@ -11,7 +11,10 @@ export class EmailServer {
     this.server = new SMTPServer({
       secure: false,
       onAuth(auth, session, callback) {
-        if (auth.username !== 'abc' || auth.password !== 'def') {
+        const username = process.env.SMTP_USERNAME;
+        const password = process.env.SMTP_PASSWORD;
+
+        if (auth.username !== username || auth.password !== password) {
           return callback(new Error('Invalid username or password'));
         }
 
