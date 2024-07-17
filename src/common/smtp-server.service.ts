@@ -26,8 +26,6 @@ export class EmailServer {
         const mailparser = new MailParser();
 
         mailparser.on('headers', (headers) => {
-          const from = headers.get('from');
-
           payload = {
             ...payload,
             subject: headers.get('subject'),
